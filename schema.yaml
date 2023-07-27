@@ -1,0 +1,300 @@
+openapi: 3.0.0
+info:
+  title: WhatsApp API
+  description: API for managing WhatsApp devices and interactions
+  version: 1.0.0
+servers:
+  - url: https://wa.dup.company
+    description: Production server
+security:
+  - apiKey: []
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      name: x-rapidapi-key
+      in: header
+paths:
+  /device:
+    post:
+      summary: Register a new device for WhatsApp
+      description: Register a new device with a given name and phone number.
+      operationId: registerDevice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                deviceName:
+                  type: string
+                  description: Name of the device
+                phoneNumber:
+                  type: string
+                  description: Phone number with extension (e.g., +1234567890)
+      responses:
+        '200':
+          description: Successfully registered the device
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  qrCode:
+                    type: string
+                    description: Base64-encoded QR code image
+                  refreshCode:
+                    type: string
+                    description: Refresh code for getting a new QR code
+        '400':
+          description: Invalid parameters provided
+  /devices/{deviceId}/qrcode:
+    get:
+      summary: Get a new QR code image using the refresh code
+      description: Request a new QR code image using the refresh code received during registration.
+      operationId: getQRCodeByRefreshCode
+      parameters:
+        - name: deviceId
+          in: path
+          description: ID of the registered device
+          required: true
+          schema:
+            type: string
+        - name: refreshCode
+          in: query
+          description: Refresh code obtained during registration
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully retrieved the new QR code image
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  qrCode:
+                    type: string
+                    description: Base64-encoded QR code image
+        '400':
+          description: Invalid parameters provided or maximum retries exceeded
+  /devices:
+    get:
+      summary: Get all registered devices
+      description: Get a list of all registered WhatsApp devices.
+      operationId: getAllDevices
+      responses:
+        '200':
+          description: Successfully retrieved the list of devices
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    deviceId:
+                      type: string
+                      description: ID of the registered device
+                    deviceName:
+                      type: string
+                      description: Name of the device
+        '400':
+          description: Error occurred while fetching devices
+  /devices/{deviceId}/groups:
+    get:
+      summary: Get a list of joined groups for a device
+      description: Get a list of all groups joined by a specific device.
+      operationId: getJoinedGroups
+      parameters:
+        - name: deviceId
+          in: path
+          description: ID of the registered device
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully retrieved the list of joined groups
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    groupId:
+                      type: string
+                      description: ID of the group
+                    groupName:
+                      type: string
+                      description: Name of the group
+        '400':
+          description: Error occurred while fetching joined groups
+  /devices/{deviceId}/groups/{groupId}/members:
+    get:
+      summary: Get a list of members in a group
+      description: Get a list of all members in a specific group joined by a device.
+      operationId: getGroupMembers
+      parameters:
+        - name: deviceId
+          in: path
+          description: ID of the registered device
+          required: true
+          schema:
+            type: string
+        - name: groupId
+          in: path
+          description: ID of the group
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully retrieved the list of group members
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    memberId:
+                      type: string
+                      description: ID of the group member
+                    memberName:
+                      type: string
+                      description: Name of the group member
+        '400':
+          description: Error occurred while fetching group members
+  /devices/{deviceId}/profile:
+    put:
+      summary: Update profile name or avatar of the device
+      description: Update the profile name or avatar (valid image URL only) of the device.
+      operationId: updateProfile
+      parameters:
+        - name: deviceId
+          in: path
+          description: ID of the registered device
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                profileName:
+                  type: string
+                  description: Updated profile name for the device
+                avatarUrl:
+                  type: string
+                  description: Valid image URL for the device's avatar
+      responses:
+        '200':
+          description: Successfully updated the profile
+        '400':
+          description: Invalid parameters provided
+  /devices/{deviceId}/groups/{groupId}/addmembers:
+    post:
+      summary: Add members to a group
+      description: Add a list of phone numbers as members to a specific group joined by a device.
+      operationId: addGroupMembers
+      parameters:
+        - name: deviceId
+          in: path
+          description: ID of the registered device
+          required: true
+          schema:
+            type: string
+        - name: groupId
+          in: path
+          description: ID of the group
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phoneNumbers:
+                  type: array
+                  items:
+                    type: string
+                  description: List of phone numbers to be added as group members
+      responses:
+        '200':
+          description: Successfully added members to the group
+        '400':
+          description: Invalid parameters or phone numbers provided
+  /devices/{deviceId}/contacts/{contactId}:
+    get:
+      summary: Get contact details by contact ID
+      description: Get details of a contact using its ID.
+      operationId: getContactDetails
+      parameters:
+        - name: deviceId
+          in: path
+          description: ID of the registered device
+          required: true
+          schema:
+            type: string
+        - name: contactId
+          in: path
+          description: ID of the contact
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully retrieved contact details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  contactName:
+                    type: string
+                    description: Name of the contact
+                  phoneNumber:
+                    type: string
+                    description: Phone number of the contact
+        '400':
+          description: Invalid parameters provided
+  /devices/{deviceId}/contacts:
+    post:
+      summary: Add a contact using device ID
+      description: Add a new contact using the device ID.
+      operationId: addContact
+      parameters:
+        - name: deviceId
+          in: path
+          description: ID of the registered device
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                contactName:
+                  type: string
+                  description: Name of the contact
+                phoneNumber:
+                  type: string
+                  description: Phone number of the contact
+      responses:
+        '200':
+          description: Successfully added the contact
+        '400':
+          description: Invalid parameters provided

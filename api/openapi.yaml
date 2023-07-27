@@ -1,0 +1,353 @@
+openapi: 3.0.0
+info:
+  description: API for managing WhatsApp devices and interactions
+  title: WhatsApp API
+  version: 1.0.0
+servers:
+- url: https://wa.dup.company
+security:
+- apiKey: []
+paths:
+  /device:
+    post:
+      description: Register a new device with a given name and phone number.
+      operationId: registerDevice
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/registerDevice_request'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/registerDevice_200_response'
+          description: Successfully registered the device
+        "400":
+          description: Invalid parameters provided
+      summary: Register a new device for WhatsApp
+  /devices/{deviceId}/qrcode:
+    get:
+      description: Request a new QR code image using the refresh code received during
+        registration.
+      operationId: getQRCodeByRefreshCode
+      parameters:
+      - description: ID of the registered device
+        explode: false
+        in: path
+        name: deviceId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Refresh code obtained during registration
+        explode: true
+        in: query
+        name: refreshCode
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/getQRCodeByRefreshCode_200_response'
+          description: Successfully retrieved the new QR code image
+        "400":
+          description: Invalid parameters provided or maximum retries exceeded
+      summary: Get a new QR code image using the refresh code
+  /devices:
+    get:
+      description: Get a list of all registered WhatsApp devices.
+      operationId: getAllDevices
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/getAllDevices_200_response_inner'
+                type: array
+          description: Successfully retrieved the list of devices
+        "400":
+          description: Error occurred while fetching devices
+      summary: Get all registered devices
+  /devices/{deviceId}/groups:
+    get:
+      description: Get a list of all groups joined by a specific device.
+      operationId: getJoinedGroups
+      parameters:
+      - description: ID of the registered device
+        explode: false
+        in: path
+        name: deviceId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/getJoinedGroups_200_response_inner'
+                type: array
+          description: Successfully retrieved the list of joined groups
+        "400":
+          description: Error occurred while fetching joined groups
+      summary: Get a list of joined groups for a device
+  /devices/{deviceId}/groups/{groupId}/members:
+    get:
+      description: Get a list of all members in a specific group joined by a device.
+      operationId: getGroupMembers
+      parameters:
+      - description: ID of the registered device
+        explode: false
+        in: path
+        name: deviceId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: ID of the group
+        explode: false
+        in: path
+        name: groupId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/getGroupMembers_200_response_inner'
+                type: array
+          description: Successfully retrieved the list of group members
+        "400":
+          description: Error occurred while fetching group members
+      summary: Get a list of members in a group
+  /devices/{deviceId}/profile:
+    put:
+      description: Update the profile name or avatar (valid image URL only) of the
+        device.
+      operationId: updateProfile
+      parameters:
+      - description: ID of the registered device
+        explode: false
+        in: path
+        name: deviceId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/updateProfile_request'
+        required: true
+      responses:
+        "200":
+          description: Successfully updated the profile
+        "400":
+          description: Invalid parameters provided
+      summary: Update profile name or avatar of the device
+  /devices/{deviceId}/groups/{groupId}/addmembers:
+    post:
+      description: Add a list of phone numbers as members to a specific group joined
+        by a device.
+      operationId: addGroupMembers
+      parameters:
+      - description: ID of the registered device
+        explode: false
+        in: path
+        name: deviceId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: ID of the group
+        explode: false
+        in: path
+        name: groupId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/addGroupMembers_request'
+        required: true
+      responses:
+        "200":
+          description: Successfully added members to the group
+        "400":
+          description: Invalid parameters or phone numbers provided
+      summary: Add members to a group
+  /devices/{deviceId}/contacts/{contactId}:
+    get:
+      description: Get details of a contact using its ID.
+      operationId: getContactDetails
+      parameters:
+      - description: ID of the registered device
+        explode: false
+        in: path
+        name: deviceId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: ID of the contact
+        explode: false
+        in: path
+        name: contactId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/getContactDetails_200_response'
+          description: Successfully retrieved contact details
+        "400":
+          description: Invalid parameters provided
+      summary: Get contact details by contact ID
+  /devices/{deviceId}/contacts:
+    post:
+      description: Add a new contact using the device ID.
+      operationId: addContact
+      parameters:
+      - description: ID of the registered device
+        explode: false
+        in: path
+        name: deviceId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/getContactDetails_200_response'
+        required: true
+      responses:
+        "200":
+          description: Successfully added the contact
+        "400":
+          description: Invalid parameters provided
+      summary: Add a contact using device ID
+components:
+  schemas:
+    registerDevice_200_response:
+      example:
+        qrCode: qrCode
+        refreshCode: refreshCode
+      properties:
+        qrCode:
+          description: Base64-encoded QR code image
+          type: string
+        refreshCode:
+          description: Refresh code for getting a new QR code
+          type: string
+      type: object
+    getAllDevices_200_response_inner:
+      example:
+        deviceId: deviceId
+        deviceName: deviceName
+      properties:
+        deviceId:
+          description: ID of the registered device
+          type: string
+        deviceName:
+          description: Name of the device
+          type: string
+      type: object
+    registerDevice_request:
+      properties:
+        deviceName:
+          description: Name of the device
+          type: string
+        phoneNumber:
+          description: "Phone number with extension (e.g., +1234567890)"
+          type: string
+      type: object
+    getContactDetails_200_response:
+      example:
+        phoneNumber: phoneNumber
+        contactName: contactName
+      properties:
+        contactName:
+          description: Name of the contact
+          type: string
+        phoneNumber:
+          description: Phone number of the contact
+          type: string
+      type: object
+    getQRCodeByRefreshCode_200_response:
+      example:
+        qrCode: qrCode
+      properties:
+        qrCode:
+          description: Base64-encoded QR code image
+          type: string
+      type: object
+    getJoinedGroups_200_response_inner:
+      example:
+        groupName: groupName
+        groupId: groupId
+      properties:
+        groupId:
+          description: ID of the group
+          type: string
+        groupName:
+          description: Name of the group
+          type: string
+      type: object
+    updateProfile_request:
+      properties:
+        profileName:
+          description: Updated profile name for the device
+          type: string
+        avatarUrl:
+          description: Valid image URL for the device's avatar
+          type: string
+      type: object
+    getGroupMembers_200_response_inner:
+      example:
+        memberName: memberName
+        memberId: memberId
+      properties:
+        memberId:
+          description: ID of the group member
+          type: string
+        memberName:
+          description: Name of the group member
+          type: string
+      type: object
+    addGroupMembers_request:
+      properties:
+        phoneNumbers:
+          description: List of phone numbers to be added as group members
+          items:
+            type: string
+          type: array
+      type: object
+  securitySchemes:
+    apiKey:
+      in: header
+      name: x-rapidapi-key
+      type: apiKey
